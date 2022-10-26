@@ -1,18 +1,105 @@
 // import React from 'react'
 import styled from "styled-components";
+import { auth, provider } from "../firebase";
+import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from 'react-router-dom';
+import { selectUserName, selectUserPhoto, setUserLoginDetails } from '../features/user/userSlice';
+
 
 const Header = (props) => {
+
+    // const handleAuth = () => {
+    //     auth.signInWithPopup(provider).then((result) => {
+    //         console.log(result);
+    //     }).catch((error) => {
+    //         alert(error.message)
+    //     })
+    // }
+
+    const dispatch = useDispatch()
+    const history = useNavigate()
+    const userName = useSelector(selectUserName)
+    const userPhoto = useSelector(selectUserPhoto)
+
+    const googleHandler = async () => {
+        provider.setCustomParameters({ prompt: 'select_account' });
+        signInWithPopup(auth, provider)
+            .then((result) => {
+                // This gives you a Google Access Token. You can use it to access the Google API.
+                const credential = GoogleAuthProvider.credentialFromResult(result);
+                const token = credential.accessToken;
+                // The signed-in user info.
+                const user = result.user;
+                console.log(result);
+                setUser(result.user)
+                // redux action? --> dispatch({ type: SET_USER, user });
+            })
+            .catch((error) => {
+                // Handle Errors here.
+                const errorCode = error.code;
+                const errorMessage = error.message;
+                // The email of the user's account used.
+                const email = error.email;
+                // The AuthCredential type that was used.
+                const credential = GoogleAuthProvider.credentialFromError(error);
+                // ...
+            });
+    };
+
+        const setUser = (user) => {
+            dispatch(
+                setUserLoginDetails({
+                    name: user.displayName,
+                    email: user.email,
+                    photo: user.photoURL,
+                })
+            )
+        }
+
     return (
 <Nav>
 <Logo>
     <img src="/images/logo.svg" alt="Disney+" />
 </Logo>
+
+        {
+            !userName ? 
+            <Login onClick={googleHandler}>Login</Login>
+            :
+            <>
+        
+
 <NavMenu>
     <a href='/home'>
     <img src="/images/home-icon.svg" alt="HOME" />
     <span>HOME</span>
     </a>
+    <a href='/'>
+    <img src="/images/search-icon.svg" alt="SEARCH" />
+    <span>SEARCH</span>
+    </a>
+    <a href='/'>
+    <img src="/images/watchlist-icon.svg" alt="WATCHLIST" />
+    <span>WATCHLIST</span>
+    </a>
+    <a href='/'>
+    <img src="/images/original-icon.svg" alt="ORIGINALS" />
+    <span>ORIGINALS</span>
+    </a>
+    <a href='/'>
+    <img src="/images/movie-icon.svg" alt="MOVIES" />
+    <span>MOVIES</span>
+    </a>
+    <a href='/'>
+    <img src="/images/series-icon.svg" alt="SERIES" />
+    <span>SERIES</span>
+    </a>
 </NavMenu>
+<UserImg src={userPhoto} alt={userName} />
+</>
+}
+{/* <Login onClick={googleHandler}>Login</Login> */}
 </Nav>
     );
   };
@@ -29,7 +116,7 @@ display: flex;
 justify-content: space-between;
 align-items: center;
 padding: 0 36px;
-letter-spacing: 16px;
+letter-spacing: 1,6px;
 z-index: 3;
 `;
 
@@ -110,6 +197,26 @@ a {
 // @media (max-width: 768px) {
 //     display: none;
 // }
+`;
+
+const Login = styled.a`
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 8px 16px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    border: 1px solid #f9f9f9;
+    border-radius: 4px;
+    transition: all .2s ease 0s;
+
+    &:hover {
+        background-color: #f9f9f9;
+        color: #000;
+        border-color: transparent;
+    }
+`;
+
+const UserImg = styled.img`
+height: 100%;
 `;
 
 export default Header
