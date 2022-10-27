@@ -4,7 +4,9 @@ import { auth, provider } from "../firebase";
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from 'react-router-dom';
-import { selectUserName, selectUserPhoto, setUserLoginDetails } from '../features/user/userSlice';
+import { selectUserName, selectUserPhoto, setSignOutState, setUserLoginDetails } from '../features/user/userSlice';
+import { useEffect } from "react";
+import { signOut } from 'firebase/auth';
 
 
 const Header = (props) => {
@@ -18,11 +20,21 @@ const Header = (props) => {
     // }
 
     const dispatch = useDispatch()
-    const history = useNavigate()
+    const navigate = useNavigate()
     const userName = useSelector(selectUserName)
     const userPhoto = useSelector(selectUserPhoto)
 
+    useEffect(() => {
+        auth.onAuthStateChanged(async (user) => {
+            if(user) {
+                setUser(user)
+                navigate('/home', {replace: true})
+            }
+        });
+    }, [userName]);
+
     const googleHandler = async () => {
+        if (!userName) {
         provider.setCustomParameters({ prompt: 'select_account' });
         signInWithPopup(auth, provider)
             .then((result) => {
@@ -45,7 +57,19 @@ const Header = (props) => {
                 const credential = GoogleAuthProvider.credentialFromError(error);
                 // ...
             });
-    };
+    } else if (userName) {
+        signOut(auth)
+    .then(() => {
+        dispatch(setSignOutState())
+        console.log('logged out');
+        navigate('/', {replace: true});
+    })
+    .catch((error) => {
+        console.log(error);
+        alert(error.message);
+    });
+    }
+}
 
         const setUser = (user) => {
             dispatch(
@@ -96,7 +120,12 @@ const Header = (props) => {
     <span>SERIES</span>
     </a>
 </NavMenu>
+<SignOut>
 <UserImg src={userPhoto} alt={userName} />
+<DropDown>
+    <span onClick={googleHandler}>Sign out</span>
+</DropDown>
+</SignOut>
 </>
 }
 {/* <Login onClick={googleHandler}>Login</Login> */}
@@ -219,4 +248,43 @@ const UserImg = styled.img`
 height: 100%;
 `;
 
-export default Header
+const DropDown = styled.div`
+position: absolute;
+top: 48px;
+right: 0px;
+background: rgb(19, 19, 19);
+border: 1px solid rgba(151, 151, 151, 0.34);
+border-radius: 4px;
+box-shadow: rgb(0 0 0 / 50%) 0px 0px 18px 0px;
+padding: 10px;
+font-size: 14px;
+letter-spacing: 3px;
+width: 100px;
+opacity: 0;
+`;
+
+const SignOut = styled.div`
+position: relative;
+height: 48px;
+width: 48px;
+display: flex;
+cursor: pointer;
+align-items: center;
+justify-content: center;
+
+${UserImg} {
+    border-radius: 50%;
+    width: 100%;
+    height: 100%;
+    min-width: 48px;
+}
+
+&:hover {
+    ${DropDown} {
+        opacity: 1;
+        transition-duration: 1s;
+    }
+}
+`;
+
+export default Header;
