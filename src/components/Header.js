@@ -160,6 +160,9 @@ display: inline-block;
 img {
     display: block;
     width: 100%;
+    
+    //added logo to small FIX
+    min-width: 80px;
 }
 `;
 
