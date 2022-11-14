@@ -1,5 +1,6 @@
 import { configureStore, getDefaultMiddleware } from '@reduxjs/toolkit';
 import userReducer from '../features/user/userSlice';
+import movieReducer from '../features/movie/movieSlice';
 
 // OLD WAY ON VIDEO
 // export default configureStore({
@@ -13,7 +14,8 @@ import userReducer from '../features/user/userSlice';
 //NEW WAY FROM DOCS
 export default configureStore({
     reducer: {
-        user: userReducer
+        user: userReducer,
+        movie: movieReducer,
     },
     middleware: (getDefaultMiddleware) => 
     getDefaultMiddleware({

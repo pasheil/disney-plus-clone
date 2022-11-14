@@ -6,6 +6,7 @@ import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getStorage } from "firebase/storage";
 
 
+
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -42,4 +43,4 @@ provider.setCustomParameters({ prompt: 'select_account' });
 
 // TRY TO  EXPORT THIS WAY
 // export { auth, storage, provider };
-// export default db;
+ export default db;
